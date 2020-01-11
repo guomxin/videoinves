@@ -20,7 +20,7 @@ NINTH_FLOOR_RIGHT_CAMERA = 'rtsp://admin:admin123@10.10.30.123:554'
 IMAGE_PATH = '/home/guomao/data'
 
 def save_image(image_path, prefix, image):
-    image_file_name = image_path + '/' + prefix + '-' + datetime.datetime.now().strftime('%H-%M-%S') + '.png'
+    image_file_name = image_path + '/' + prefix + '-' + datetime.datetime.now().strftime('%H-%M-%S-%f')[:-3] + '.png'
     cv2.imwrite(image_file_name, image)
 
 def display_video(camera, vs):
@@ -100,7 +100,7 @@ def capture_with_threading(camera, display=True):
         frame = vs.read()
         read_cost = (time.time() - start) * 1000
         frame_count += 1
-        if frame_count % 5 == 0:
+        if frame_count >= 100 and frame_count < 200:
             save_image(IMAGE_PATH, 'cv2', frame)
         
         start = time.time()
@@ -146,7 +146,7 @@ def capture_with_threading_ffmpeg(camera, display=True, width=WIDTH, height=HEIG
         frame = vs.read()
         read_cost = (time.time() - start) * 1000
         frame_count += 1
-        if frame_count % 5 == 0:
+        if frame_count >= 100 and frame_count < 200:
             save_image(IMAGE_PATH, 'ffmpeg', frame)
 
         start = time.time()
@@ -182,13 +182,13 @@ if __name__ == '__main__':
     if len(sys.argv) >= 2:
         camera_id = int(sys.argv[1])
         if camera_id == 1:
-            capture_with_threading_ffmpeg(THIRD_FLOOR_LEFT_CAMERA, False)
+            capture_with_threading_ffmpeg(THIRD_FLOOR_LEFT_CAMERA, True)
         elif camera_id == 2:
-            capture_with_threading_ffmpeg(THIRD_FLOOR_RIGHT_CAMERA)
+            capture_with_threading_ffmpeg(THIRD_FLOOR_RIGHT_CAMERA, True)
         elif camera_id == 3:
-            capture_with_threading_ffmpeg(NINTH_FLOOR_LEFT_CAMERA, False)
+            capture_with_threading_ffmpeg(NINTH_FLOOR_LEFT_CAMERA, True)
         else:
-            capture_with_threading_ffmpeg(NINTH_FLOOR_RIGHT_CAMERA, False)
+            capture_with_threading_ffmpeg(NINTH_FLOOR_RIGHT_CAMERA, True)
             
 
 #capture_without_threading(THIRD_FLOOR_RIGHT_CAMERA)
