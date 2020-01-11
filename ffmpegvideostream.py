@@ -11,7 +11,7 @@ class FFmpegVideoStream:
         self.process = (
             ffmpeg
              .input(src, rtsp_transport='tcp', r=25)
-             .output('-', format='rawvideo', pix_fmt='rgb24')#, r=25)#async=1, vsync=1)
+             .output('-', format='rawvideo', pix_fmt='rgb24', r=25)#async=1, vsync=1)
              .run_async(pipe_stdout=True)
         )
         packet = self.process.stdout.read(self.height * self.width * 3)
