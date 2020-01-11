@@ -10,8 +10,8 @@ class FFmpegVideoStream:
         self.height = height
         self.process = (
             ffmpeg
-             .input(src)
-             .output('-', format='rawvideo', pix_fmt='rgb24')
+             .input(src, rtsp_transport='tcp', r=25)
+             .output('-', format='rawvideo', pix_fmt='rgb24')#, r=25)#async=1, vsync=1)
              .run_async(pipe_stdout=True)
         )
         packet = self.process.stdout.read(self.height * self.width * 3)
@@ -39,6 +39,7 @@ class FFmpegVideoStream:
         while self.process.poll() is None:
             # if the thread indicator variable is set, stop the thread
             if self.stopped:
+                self.frame = None
                 return
     
             # otherwise, read the next frame from the stream
@@ -51,6 +52,7 @@ class FFmpegVideoStream:
                 )
             except:
                 self.frame = None
+                return
 
     def read(self):
         # return the frame most recently read
