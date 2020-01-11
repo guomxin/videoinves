@@ -5,6 +5,7 @@ from imutils.video import WebcamVideoStream
 import imutils
 import cv2
 import time
+import datetime
 import sys
 
 import threading
@@ -15,7 +16,13 @@ THIRD_FLOOR_LEFT_CAMERA = 'rtsp://admin:admin@123@10.10.30.125:554'
 THIRD_FLOOR_RIGHT_CAMERA = 'rtsp://admin:admin123@10.10.30.126:554'
 NINTH_FLOOR_LEFT_CAMERA = 'rtsp://admin:admin123@10.10.30.122:554'
 NINTH_FLOOR_RIGHT_CAMERA = 'rtsp://admin:admin123@10.10.30.123:554'
- 
+
+IMAGE_PATH = '/home/guomao/data'
+
+def save_image(image_path, prefix, image):
+    image_file_name = image_path + '/' + prefix + '-' + datetime.datetime.now().strftime('%H-%M-%S') + '.png'
+    cv2.imwrite(image_file_name, image)
+
 def display_video(camera, vs):
     #cv2.namedWindow(camera, flags=cv2.WINDOW_FREERATIO)
     while True:
@@ -81,15 +88,20 @@ def capture_without_threading_without_workload(camera):
     stream.release()
     cv2.destroyAllWindows()
 
-def capture_with_threading(camera):
+def capture_with_threading(camera, display=True):
     vs = WebcamVideoStream(camera).start()
-    threading.Thread(target=display_video, args=(camera, vs)).start()     
+    if display:
+        threading.Thread(target=display_video, args=(camera, vs)).start()
+    frame_count = 0     
     while True:
         # grab the frame from the threaded video stream and resize it
         # to have a maximum width of 400 pixels
         start = time.time()
         frame = vs.read()
         read_cost = (time.time() - start) * 1000
+        frame_count += 1
+        if frame_count % 5 == 0:
+            save_image(IMAGE_PATH, 'cv2', frame)
         
         start = time.time()
         for i in range(100):
@@ -122,17 +134,21 @@ def capture_with_threading_without_workload(camera):
 
 WIDTH = 1920
 HEIGHT = 1080
-def capture_with_threading_ffmpeg(camera, display=True):
-    vs = FFmpegVideoStream(camera, WIDTH, HEIGHT).start()
+def capture_with_threading_ffmpeg(camera, display=True, width=WIDTH, height=HEIGHT):
+    vs = FFmpegVideoStream(camera, width, height).start()
     if display:
-        threading.Thread(target=display_video, args=(camera, vs)).start()     
+        threading.Thread(target=display_video, args=(camera, vs)).start()
+    frame_count = 0     
     while True:
         # grab the frame from the threaded video stream and resize it
         # to have a maximum width of 400 pixels
         start = time.time()
         frame = vs.read()
         read_cost = (time.time() - start) * 1000
-        
+        frame_count += 1
+        if frame_count % 5 == 0:
+            save_image(IMAGE_PATH, 'ffmpeg', frame)
+
         start = time.time()
         for i in range(100):
             imutils.resize(frame, width=400)
@@ -142,8 +158,8 @@ def capture_with_threading_ffmpeg(camera, display=True):
     # do a bit of cleanup
     vs.stop()
 
-def capture_with_threading_without_workload_ffmpeg(camera):
-    vs = FFmpegVideoStream(camera, WIDTH, HEIGHT).start()
+def capture_with_threading_without_workload_ffmpeg(camera, width=WIDTH, height=HEIGHT):
+    vs = FFmpegVideoStream(camera, width, height).start()
      
     while True:
         # grab the frame from the threaded video stream and resize it
