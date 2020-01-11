@@ -16,6 +16,7 @@ THIRD_FLOOR_LEFT_CAMERA = 'rtsp://admin:admin@123@10.10.30.125:554'
 THIRD_FLOOR_RIGHT_CAMERA = 'rtsp://admin:admin123@10.10.30.126:554'
 NINTH_FLOOR_LEFT_CAMERA = 'rtsp://admin:admin123@10.10.30.122:554'
 NINTH_FLOOR_RIGHT_CAMERA = 'rtsp://admin:admin123@10.10.30.123:554'
+MYBDROOM_CAMERA = 'rtsp://192.168.0.34:8554/mybdroom'
 
 IMAGE_PATH = '/home/guomao/data'
 
@@ -134,8 +135,8 @@ def capture_with_threading_without_workload(camera):
 
 WIDTH = 1920
 HEIGHT = 1080
-def capture_with_threading_ffmpeg(camera, display=True, width=WIDTH, height=HEIGHT):
-    vs = FFmpegVideoStream(camera, width, height).start()
+def capture_with_threading_ffmpeg(camera, display=True, width=WIDTH, height=HEIGHT, rtsp_transport='tcp', in_frame_rate=25, out_frame_rate=25):
+    vs = FFmpegVideoStream(camera, width, height, rtsp_transport, in_frame_rate, out_frame_rate).start()
     if display:
         threading.Thread(target=display_video, args=(camera, vs)).start()
     frame_count = 0     
@@ -150,10 +151,10 @@ def capture_with_threading_ffmpeg(camera, display=True, width=WIDTH, height=HEIG
             save_image(IMAGE_PATH, 'ffmpeg', frame)
 
         start = time.time()
-        for i in range(100):
+        for i in range(30):
             imutils.resize(frame, width=400)
         handle_cost = (time.time() - start) * 1000
-        print("read: {:.2f}ms, handle: {:.2f}ms".format(read_cost, handle_cost))
+        #print("read: {:.2f}ms, handle: {:.2f}ms".format(read_cost, handle_cost))
      
     # do a bit of cleanup
     vs.stop()
@@ -187,8 +188,10 @@ if __name__ == '__main__':
             capture_with_threading_ffmpeg(THIRD_FLOOR_RIGHT_CAMERA, True)
         elif camera_id == 3:
             capture_with_threading_ffmpeg(NINTH_FLOOR_LEFT_CAMERA, True)
-        else:
+        elif camera_id == 4:
             capture_with_threading_ffmpeg(NINTH_FLOOR_RIGHT_CAMERA, True)
+        elif camera_id == 5:
+            capture_with_threading_ffmpeg(MYBDROOM_CAMERA, True, 720, 360, 'udp', 15, 15)
             
 
 #capture_without_threading(THIRD_FLOOR_RIGHT_CAMERA)

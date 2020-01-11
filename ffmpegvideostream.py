@@ -3,15 +3,15 @@ import ffmpeg
 import numpy as np
 
 class FFmpegVideoStream:
-    def __init__(self, src, width, height, name="FFmpegVideoStream"):
+    def __init__(self, src, width, height, rtsp_transport='tcp', in_frame_rate=25, out_frame_rate=25, name="FFmpegVideoStream"):
         # get the first frame from stream 
         self.frame = None
         self.width = width
         self.height = height
         self.process = (
             ffmpeg
-             .input(src, rtsp_transport='tcp', r=25)
-             .output('-', format='rawvideo', pix_fmt='rgb24', r=25)#async=1, vsync=1)
+             .input(src, rtsp_transport=rtsp_transport, r=in_frame_rate)
+             .output('-', format='rawvideo', pix_fmt='rgb24', r=out_frame_rate)#, async=1, vsync=1)
              .run_async(pipe_stdout=True)
         )
         packet = self.process.stdout.read(self.height * self.width * 3)
